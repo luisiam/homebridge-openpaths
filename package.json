@@ -1,0 +1,25 @@
+{
+  "name": "homebridge-openpaths",
+  "version": "0.1.0",
+  "description": "Presence Detection (OpenPaths) Plugin for HomeBridge: https://github.com/nfarina/homebridge",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/luisiam/homebridge-openpaths.git"
+  },
+  "keywords": [
+    "homebridge-plugin"
+  ],
+  "author": "Luis Iam",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/luisiam/homebridge-openpaths/issues"
+  },
+  "homepage": "https://github.com/luisiam/homebridge-openpaths#readme",
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
+  },
+  "dependencies": {
+    "openpaths-api": ">=0.0.1"
+  }
+}
