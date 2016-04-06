@@ -44,7 +44,7 @@ Configuration sample:
 | latitude     | Latitude of reference location for presence detection.        | Yes      |
 | longitude    | Longitude of reference location for presence detection.       | Yes      |
 | geofence     | Size of reference location geofence in `ft` (Default 300ft).  | No       |
-| geofence     | Interval to poll for user location in `s` (Default 10s).      | No       |
+| refresh      | Interval to poll for user location in `s` (Default 10s).      | No       |
 | manufacturer | The manufacturer of your device.                              | No       |
 | model        | The model of your device.                                     | No       |
 | serial       | The serial number of your device.                             | No       |
