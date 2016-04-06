@@ -1,4 +1,4 @@
-# homebridge-openpaths
+# homebridge-openpaths [![npm version](https://badge.fury.io/js/homebridge-openpaths.svg)](https://badge.fury.io/js/homebridge-openpaths)
 Presence Detection (OpenPaths) Plugin for [HomeBridge](https://github.com/nfarina/homebridge)
 
 # Installation
