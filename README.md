@@ -12,27 +12,26 @@ Presence Detection (OpenPaths) Plugin for [HomeBridge](https://github.com/nfarin
 Configuration sample:
  ```
 "accessories": [{
-	"accessory": "OpenPaths",
-	"name" : "Presence Detection",
-	"people": [{
-		"name": "Person 1",
-		"access": "Access Key for Person 1",
-		"secret": "Secret Key for Person 1"
-	}, {
-		"name": "Person 2",
-		"access": "Access Key for Person 2",
-		"secret": "Secret Key for Person 2"
-	}],
-	"latitude": "37.2972061",
-	"longitude": "-121.957494",
+    "accessory": "OpenPaths",
+    "name" : "Presence Detection",
+    "people": [{
+        "name": "Person 1",
+        "access": "Access Key for Person 1",
+        "secret": "Secret Key for Person 1"
+    }, {
+        "name": "Person 2",
+        "access": "Access Key for Person 2",
+        "secret": "Secret Key for Person 2"
+    }],
+    "latitude": "37.2972061",
+    "longitude": "-121.957494",
 
-	"geofence": "300",
-	"refresh": "10",
-	"manufacturer": "Manufacturer",
-	"model": "Model",
-	"serial": "Serial Number"
+    "geofence": "300",
+    "refresh": "10",
+    "manufacturer": "Manufacturer",
+    "model": "Model",
+    "serial": "Serial Number"
 }]
-
 ```
 
 
