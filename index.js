@@ -16,7 +16,7 @@ function OpenPathsAccessory(log, config){
   this.toLat = config.latitude * Math.PI / 180;     // Convert to radian
   this.toLon = config.longitude * Math.PI / 180;    // Convert to radian
   this.geofence = config.geofence || 300;
-  this.refresh = config.refresh || 10;
+  this.refresh = config.refresh * 1000 || 10000;    // Convert to ms
   this.manufacturer = config.manufacturer;
   this.model = config.model;
   this.serial = config.serial;
@@ -130,7 +130,7 @@ OpenPathsAccessory.prototype = {
         this.log((this.anyoneSensorState ? "Someone" : "No one") + " is present.");
     }
 
-    setTimeout(this.periodicUpdate.bind(this), this.refresh * 1000);
+    setTimeout(this.periodicUpdate.bind(this), this.refresh);
   },
 
   getLocation: function(data, i) {
