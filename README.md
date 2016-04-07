@@ -1,12 +1,22 @@
 # homebridge-openpaths [![npm version](https://badge.fury.io/js/homebridge-openpaths.svg)](https://badge.fury.io/js/homebridge-openpaths)
 Presence Detection (OpenPaths) Plugin for [HomeBridge](https://github.com/nfarina/homebridge)
 
+<p>
+Basics of how this plugin works:<br>
+1. Retrieve the latest location record from `OpenPaths` server periodicly.<br>
+2. Calculate distance between the latest location and the reference location.<br>
+3. Determine if the distance is greater than the geofence setting.<br>
+4. Update occupancy sensor state if there's a change.
+</p>
+
 # Installation
-1. Register in [OpenPaths](https://openpaths.cc).
-2. Login and locate your `Access Key` and `Secret Key` in OpenPaths.
-3. Install homebridge using `npm install -g homebridge`.
-4. Install this plugin using `npm install -g homebridge-openpaths`.
-5. Update your configuration file. See sample-config.json snippet below.
+<p>
+1. Register in [OpenPaths](https://openpaths.cc).<br>
+2. Login and locate your `Access Key` and `Secret Key` in OpenPaths.<br>
+3. Install homebridge using `npm install -g homebridge`.<br>
+4. Install this plugin using `npm install -g homebridge-openpaths`.<br>
+5. Update your configuration file. See sample-config.json snippet below.<br>
+</p>
 
 # Configuration
 Configuration sample:
