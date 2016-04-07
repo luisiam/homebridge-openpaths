@@ -27,7 +27,7 @@ function OpenPathsAccessory(log, config){
   this.sensorStatus = [];
   this.occupancyService = [];
 
-  // Initial state and status of anyone occupancy sensor
+  // Initial state of anyone occupancy sensor
   this.anyoneSensorState = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
 
   for (var i = 0; i < this.people.length; i++) {
@@ -209,7 +209,7 @@ OpenPathsAccessory.prototype = {
     callback();
   },
 
-    // Method to return existing services
+  // Method to return existing services
   getServices: function() {
 
     // Create Accessory Informaton Service
