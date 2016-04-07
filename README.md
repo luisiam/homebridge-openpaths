@@ -13,7 +13,7 @@ Configuration sample:
  ```
 "accessories": [{
     "accessory": "OpenPaths",
-    "name" : "Presence Detection",
+    "name" : "OpenPaths",
     "people": [{
         "name": "Person 1",
         "access": "Access Key for Person 1",
