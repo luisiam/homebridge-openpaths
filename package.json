@@ -1,6 +1,6 @@
 {
   "name": "homebridge-openpaths",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Presence Detection (OpenPaths) Plugin for HomeBridge: https://github.com/nfarina/homebridge",
   "repository": {
     "type": "git",
