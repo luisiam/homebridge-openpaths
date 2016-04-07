@@ -67,29 +67,29 @@ function OpenPathsAccessory(log, config){
 
 OpenPathsAccessory.prototype = {
 
-  // Method to return presence of one person
+  // Method to return presence of single person occupancy sensor
   getState: function(person, callback) {
     this.log(this.people[person].name + " is" + (this.sensorState[person] ? "" : " not") + " present.");
     callback(null, this.sensorState[person]);
   },
 
-  // Method to return status active of one person
+  // Method to return status active of single person occupancy sensor
   getStatusActive: function(person, callback) {
     callback(null, (this.sensorStatus[person] & 2) == 2);
   },
 
-  // Method to return status fault of one person
+  // Method to return status fault of single person occupancy sensor
   getStatusFault: function(person, callback) {
     callback(null, this.sensorStatus[person] & 1);
   },
 
-  // Method to return presence of anyone
+  // Method to return presence of anyone occupancy sensor
   getAnyoneState: function(callback) {
     this.log((this.anyoneSensorState ? "Someone" : "No one") + " is present.");
     callback(null, this.anyoneSensorState);
   },
 
-  // Method to return status fault of anyone
+  // Method to return status active of anyone occupancy sensor
   getAnyoneStatusActive: function(callback) {
     var statusActive = false;
     for (var i = 0; i < this.sensorStatus.length; i++) {
@@ -98,7 +98,7 @@ OpenPathsAccessory.prototype = {
     callback(null, statusActive);
   },
 
-  // Method to return status fault of anyone
+  // Method to return status fault of anyone occupancy sensor
   getAnyoneStatusFault: function(callback) {
     var statusFault = 0;
     for (var i = 0; i < this.sensorStatus.length; i++) {
