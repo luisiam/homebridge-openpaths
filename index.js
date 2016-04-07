@@ -69,7 +69,7 @@ OpenPathsAccessory.prototype = {
 
   // Method to return presence of one person
   getState: function(person, callback) {
-    this.log(this.people[person].name + " is " + (this.sensorState[person] ? "" : "not") + " present.");
+    this.log(this.people[person].name + " is" + (this.sensorState[person] ? "" : " not") + " present.");
     callback(null, this.sensorState[person]);
   },
 
@@ -133,7 +133,7 @@ OpenPathsAccessory.prototype = {
     setTimeout(this.periodicUpdate.bind(this), this.refresh);
   },
 
-  getLocation: function(data, i) {
+  getLocation: function(data, person) {
     var params = {num_points: 1};   // Only get the latest point
     var RADIUS = 20902231.68        // Radius of the Earth in ft
     var that = this;
@@ -152,22 +152,22 @@ OpenPathsAccessory.prototype = {
         var distance = RADIUS * c;
 
         // Detect for change in state
-        if (that.sensorState[i] != ((distance < that.geofence) ? Characteristic.OccupancyDetected.OCCUPANCY_DETECTED : Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED)) {
-          that.sensorState[i] = (distance < that.geofence) ? Characteristic.OccupancyDetected.OCCUPANCY_DETECTED : Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
-          that.occupancyService[i].getCharacteristic(Characteristic.OccupancyDetected).setValue(that.sensorState[i]);
+        if (that.sensorState[person] != ((distance < that.geofence) ? Characteristic.OccupancyDetected.OCCUPANCY_DETECTED : Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED)) {
+          that.sensorState[person] = (distance < that.geofence) ? Characteristic.OccupancyDetected.OCCUPANCY_DETECTED : Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
+          that.occupancyService[person].getCharacteristic(Characteristic.OccupancyDetected).setValue(that.sensorState[person]);
           that.log(that.people[person].name + " is " + (that.sensorState[person] ? "" : "not") + " present.");
         }
 
-        that.sensorStatus[i] = (that.sensorStatus[i] & 1) | 2;    // Active status
+        that.sensorStatus[person] = (that.sensorStatus[person] & 1) | 2;    // Active status
       } else {
-        that.sensorStatus[i] = (that.sensorStatus[i] & 1) | 0;    // Inactive status
+        that.sensorStatus[person] = (that.sensorStatus[person] & 1) | 0;    // Inactive status
       }
 
       // Error detection
       if (error) {
-        that.sensorStatus[i] = (that.sensorStatus[i] & 2) | 1;    // Fault status
+        that.sensorStatus[person] = (that.sensorStatus[person] & 2) | 1;    // Fault status
       } else {
-        that.sensorStatus[i] = (that.sensorStatus[i] & 2) | 0;    // Normal status
+        that.sensorStatus[person] = (that.sensorStatus[person] & 2) | 0;    // Normal status
       }
     });
   },
