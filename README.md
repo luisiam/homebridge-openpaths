@@ -1,5 +1,5 @@
 # homebridge-openpaths [![npm version](https://badge.fury.io/js/homebridge-openpaths.svg)](https://badge.fury.io/js/homebridge-openpaths)
-Presence Detection (OpenPaths) Plugin for [HomeBridge](https://github.com/nfarina/homebridge)
+<p>Presence Detection (OpenPaths) Plugin for <a href="https://github.com/nfarina/homebridge">HomeBridge</a></p>
 
 <p>
 Basics of how this plugin works:<br>
@@ -11,15 +11,15 @@ Basics of how this plugin works:<br>
 
 # Installation
 <p>
-1. Register in [OpenPaths](https://openpaths.cc).<br>
+1. Register in <a href="https://openpaths.cc">OpenPaths</a>.<br>
 2. Login and locate your `Access Key` and `Secret Key` in OpenPaths.<br>
 3. Install homebridge using `npm install -g homebridge`.<br>
 4. Install this plugin using `npm install -g homebridge-openpaths`.<br>
-5. Update your configuration file. See sample-config.json snippet below.<br>
+5. Update your configuration file. See configuration sample below.<br>
 </p>
 
 # Configuration
-Configuration sample:
+Edit your `config.json` accordingly. Configuration sample:
  ```
 "accessories": [{
     "accessory": "OpenPaths",
@@ -43,7 +43,6 @@ Configuration sample:
     "serial": "Serial Number"
 }]
 ```
-
 
 | Fields       | Description                                                   | Required |
 |--------------|---------------------------------------------------------------|----------|
