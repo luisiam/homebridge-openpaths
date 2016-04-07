@@ -27,7 +27,7 @@ function OpenPathsAccessory(log, config){
   this.sensorStatus = [];
   this.occupancyService = [];
 
-  // Initial state of anyone occupancy sensor
+  // Initial state and status of anyone occupancy sensor
   this.anyoneSensorState = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
 
   for (var i = 0; i < this.people.length; i++) {
@@ -69,18 +69,29 @@ OpenPathsAccessory.prototype = {
 
   // Method to return presence of single person occupancy sensor
   getState: function(person, callback) {
-    this.log(this.people[person].name + " is" + (this.sensorState[person] ? "" : " not") + " present.");
+    // Log only if status is active and normal
+    if (this.sensorStatus[person] == 2) {
+      this.log(this.people[person].name + " is" + (this.sensorState[person] ? "" : " not") + " present.");
+    }
     callback(null, this.sensorState[person]);
   },
 
   // Method to return status active of single person occupancy sensor
   getStatusActive: function(person, callback) {
-    callback(null, (this.sensorStatus[person] & 2) == 2);
+    var statusActive = ((this.sensorStatus[person] & 2) == 2);
+    if (!statusActive) {
+      this.log(this.people[person].name + "'s location is unavailable.");
+    }
+    callback(null, statusActive);
   },
 
   // Method to return status fault of single person occupancy sensor
   getStatusFault: function(person, callback) {
-    callback(null, this.sensorStatus[person] & 1);
+    var statusFault = this.sensorStatus[person] & 1;
+    if (statusFault) {
+      this.log("Error getting " + this.people[person].name + "'s location.");
+    }
+    callback(null, statusFault);
   },
 
   // Method to return presence of anyone occupancy sensor
@@ -93,7 +104,11 @@ OpenPathsAccessory.prototype = {
   getAnyoneStatusActive: function(callback) {
     var statusActive = false;
     for (var i = 0; i < this.sensorStatus.length; i++) {
-      if ((this.sensorStatus[i] & 2) == 2) statusActive = true;
+      if ((this.sensorStatus[i] & 2) == 2) {
+        statusActive = true;
+      } else {
+        this.log(this.people[i].name + "'s location is unavailable.");
+      }
     }
     callback(null, statusActive);
   },
@@ -102,33 +117,33 @@ OpenPathsAccessory.prototype = {
   getAnyoneStatusFault: function(callback) {
     var statusFault = 0;
     for (var i = 0; i < this.sensorStatus.length; i++) {
-      if (this.sensorStatus[i] & 1) statusFault = 1;
+      if (this.sensorStatus[i] & 1) {
+        statusFault = 1;
+        this.log("Error getting " + this.people[i].name + "'s location.");
+      }
     }
     callback(null, statusFault);
   },
 
   periodicUpdate: function() {
+    var that = this;
 
     // Backup previous state for change detection
     var prevState = this.anyoneSensorState;
     this.anyoneSensorState = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
 
+    // Check presence of each persion
     for (var i = 0; i < this.people.length; i++) {
-
-      // Check presence of each persion
       this.getLocation(this.database[i], i);
-
-      // Determine if anyone is presence
-      if (this.sensorState[i] == Characteristic.OccupancyDetected.OCCUPANCY_DETECTED) {
-        this.anyoneSensorState = Characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
-      }
     }
 
     // Detect for change in anyone state
-    if (this.anyoneSensorState != prevState) {
-        this.occupancyService[this.occupancyService.length - 2].getCharacteristic(Characteristic.OccupancyDetected).setValue(this.anyoneSensorState);
-        this.log((this.anyoneSensorState ? "Someone" : "No one") + " is present.");
-    }
+    setTimeout(function() {
+      if (that.anyoneSensorState != prevState) {
+        that.occupancyService[that.occupancyService.length - 2].getCharacteristic(Characteristic.OccupancyDetected).setValue(that.anyoneSensorState);
+        that.log((that.anyoneSensorState ? "Someone" : "No one") + " is present.");
+      }
+    }, 2000);
 
     setTimeout(this.periodicUpdate.bind(this), this.refresh);
   },
@@ -140,7 +155,7 @@ OpenPathsAccessory.prototype = {
 
     data.getPoints(params, function(error, response, points) {
       var current = JSON.parse(points)[0];
-      if (current) {
+      if (current && !error) {
 
         // Calculate distance between coordinates
         var fromLat = current.lat * Math.PI / 180;
@@ -151,23 +166,39 @@ OpenPathsAccessory.prototype = {
         var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         var distance = RADIUS * c;
 
-        // Detect for change in state
-        if (that.sensorState[person] != ((distance < that.geofence) ? Characteristic.OccupancyDetected.OCCUPANCY_DETECTED : Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED)) {
-          that.sensorState[person] = (distance < that.geofence) ? Characteristic.OccupancyDetected.OCCUPANCY_DETECTED : Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
-          that.occupancyService[person].getCharacteristic(Characteristic.OccupancyDetected).setValue(that.sensorState[person]);
-          that.log(that.people[person].name + " is " + (that.sensorState[person] ? "" : "not") + " present.");
+        // Determine current state
+        var currentState;
+        if (distance < that.geofence) {
+          currentState = Characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
+          that.anyoneSensorState = Characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
+        } else {
+          currentState = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
         }
 
-        that.sensorStatus[person] = (that.sensorStatus[person] & 1) | 2;    // Active status
-      } else {
-        that.sensorStatus[person] = (that.sensorStatus[person] & 1) | 0;    // Inactive status
-      }
+        // Detect for change in state
+        if (that.sensorState[person] != currentState) {
+          that.sensorState[person] = currentState;
+          that.occupancyService[person].getCharacteristic(Characteristic.OccupancyDetected).setValue(currentState);
+          that.log(that.people[person].name + " is " + (currentState ? "" : "not") + " present.");
+        }
 
-      // Error detection
-      if (error) {
-        that.sensorStatus[person] = (that.sensorStatus[person] & 2) | 1;    // Fault status
+        // Set active and normal status
+        that.sensorStatus[person] = 2;
       } else {
-        that.sensorStatus[person] = (that.sensorStatus[person] & 2) | 0;    // Normal status
+
+        // Set person to absent if location data is unavailable or there's an error
+        if (that.sensorState[person] != Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED) {
+          that.sensorState[person] = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
+          that.occupancyService[person].getCharacteristic(Characteristic.OccupancyDetected).setValue(that.sensorState[person]);
+        }
+
+        // Set inactive status
+        that.sensorStatus[person] = (that.sensorStatus[person] & 1) | 0;
+
+        // Set fault status if there's an error
+        if (error) {
+          that.sensorStatus[person] = (that.sensorStatus[person] & 2) | 1;
+        }
       }
     });
   },
@@ -178,7 +209,7 @@ OpenPathsAccessory.prototype = {
     callback();
   },
 
-	// Method to return existing services
+    // Method to return existing services
   getServices: function() {
 
     // Create Accessory Informaton Service
