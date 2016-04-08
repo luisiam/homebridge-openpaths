@@ -34,7 +34,7 @@ function OpenPathsAccessory(log, config){
 
     // Initial state and status for single person occupancy sensor
     this.sensorState.push(Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED);
-    this.sensorStatus.push(2);
+    this.sensorStatus.push(1);
 
     // Database for oauth signature
     var data = new openpaths({
@@ -150,12 +150,12 @@ OpenPathsAccessory.prototype = {
 
   getLocation: function(data, person) {
     var params = {num_points: 1};   // Only get the latest point
-    var RADIUS = 20902231.68        // Radius of the Earth in ft
+    var RADIUS = 20902231           // Radius of the Earth in ft
     var that = this;
 
     data.getPoints(params, function(error, response, points) {
-      var current = JSON.parse(points)[0];
-      if (current && !error) {
+      if (!error && response.statusCode == 200) {
+        var current = JSON.parse(points)[0];
 
         // Calculate distance between coordinates
         var fromLat = current.lat * Math.PI / 180;
@@ -186,14 +186,8 @@ OpenPathsAccessory.prototype = {
         that.sensorStatus[person] = 2;
       } else {
 
-        // Set person to absent if location data is unavailable or there's an error
-        if (that.sensorState[person] != Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED) {
-          that.sensorState[person] = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
-          that.occupancyService[person].getCharacteristic(Characteristic.OccupancyDetected).setValue(that.sensorState[person]);
-        }
-
-        // Set inactive status
-        that.sensorStatus[person] = (that.sensorStatus[person] & 1) | 0;
+        // Set inactive and normal status
+        that.sensorStatus[person] = 0;
 
         // Set fault status if there's an error
         if (error) {
@@ -211,6 +205,7 @@ OpenPathsAccessory.prototype = {
 
   // Method to return existing services
   getServices: function() {
+    var that = this;
 
     // Create Accessory Informaton Service
     var informationService = new Service.AccessoryInformation();
@@ -224,11 +219,13 @@ OpenPathsAccessory.prototype = {
     this.periodicUpdate();
 
     // Get initial state
-    for (var i = 0; i <= this.people.length; i++) {
-      this.occupancyService[i].getCharacteristic(Characteristic.OccupancyDetected).getValue();
-      this.occupancyService[i].getCharacteristic(Characteristic.StatusActive).getValue();
-      this.occupancyService[i].getCharacteristic(Characteristic.StatusFault).getValue();
-    }
+    setTimeout(function() {
+      for (var i = 0; i <= that.people.length; i++) {
+        that.occupancyService[i].getCharacteristic(Characteristic.OccupancyDetected).getValue();
+        that.occupancyService[i].getCharacteristic(Characteristic.StatusActive).getValue();
+        that.occupancyService[i].getCharacteristic(Characteristic.StatusFault).getValue();
+      }
+    }, 5000);
 
     return this.occupancyService;
   }
