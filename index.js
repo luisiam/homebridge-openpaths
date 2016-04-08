@@ -128,20 +128,27 @@ OpenPathsAccessory.prototype = {
   periodicUpdate: function() {
     var that = this;
 
-    // Backup previous state for change detection
-    var prevState = this.anyoneSensorState;
-    this.anyoneSensorState = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
-
-    // Check presence of each persion
+    // Check current state of each person
     for (var i = 0; i < this.people.length; i++) {
       this.getLocation(this.database[i], i);
     }
 
-    // Detect for change in anyone state
+    // Try to wait for getLocation to complete
     setTimeout(function() {
-      if (that.anyoneSensorState != prevState) {
-        that.occupancyService[that.occupancyService.length - 2].getCharacteristic(Characteristic.OccupancyDetected).setValue(that.anyoneSensorState);
-        that.log((that.anyoneSensorState ? "Someone" : "No one") + " is present.");
+      var currAnyoneState = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
+
+      // Determine current anyone state
+      for (var j = 0; j < that.people.length; j++) {
+        if (that.sensorState[j] == Characteristic.OccupancyDetected.OCCUPANCY_DETECTED) {
+          currAnyoneState = Characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
+        }
+      }
+
+      // Detect for changes in anyone state
+      if (that.anyoneSensorState != currAnyoneState) {
+        that.anyoneSensorState = currAnyoneState;
+        that.occupancyService[that.occupancyService.length - 2].getCharacteristic(Characteristic.OccupancyDetected).setValue(currAnyoneState);
+        that.log((currAnyoneState ? "Someone" : "No one") + " is present.");
       }
     }, 2000);
 
@@ -149,16 +156,13 @@ OpenPathsAccessory.prototype = {
   },
 
   getLocation: function(data, person) {
-    var params = {num_points: 10};  // Retrieve the last 10 points
+    var params = {num_points: 1};   // Retrieve the latest points
     var RADIUS = 20902231           // Radius of the Earth in ft
     var that = this;
 
     data.getPoints(params, function(error, response, points) {
       if (points != "[]" && !error && response.statusCode == 200) {
-
-        // Get the latest point
-        var current = JSON.parse(points);
-        current = current[current.length - 1];
+        var current = JSON.parse(points)[0];
 
         // Calculate distance between coordinates
         var fromLat = current.lat * Math.PI / 180;
@@ -170,19 +174,18 @@ OpenPathsAccessory.prototype = {
         var distance = RADIUS * c;
 
         // Determine current state
-        var currentState;
+        var currState;
         if (distance < that.geofence) {
-          currentState = Characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
-          that.anyoneSensorState = Characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
+          currState = Characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
         } else {
-          currentState = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
+          currState = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
         }
 
-        // Detect for change in state
-        if (that.sensorState[person] != currentState) {
-          that.sensorState[person] = currentState;
-          that.occupancyService[person].getCharacteristic(Characteristic.OccupancyDetected).setValue(currentState);
-          that.log(that.people[person].name + " is " + (currentState ? "" : "not") + " present.");
+        // Detect for changes in state
+        if (that.sensorState[person] != currState) {
+          that.sensorState[person] = currState;
+          that.occupancyService[person].getCharacteristic(Characteristic.OccupancyDetected).setValue(currState);
+          that.log(that.people[person].name + " is " + (currState ? "" : "not") + " present.");
         }
 
         // Set active and normal status
