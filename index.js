@@ -149,13 +149,16 @@ OpenPathsAccessory.prototype = {
   },
 
   getLocation: function(data, person) {
-    var params = {num_points: 1};   // Only get the latest point
+    var params = {num_points: 10};  // Retrieve the last 10 points
     var RADIUS = 20902231           // Radius of the Earth in ft
     var that = this;
 
     data.getPoints(params, function(error, response, points) {
-      if (!error && response.statusCode == 200) {
-        var current = JSON.parse(points)[0];
+      if (points != "[]" && !error && response.statusCode == 200) {
+
+        // Get the latest point
+        var current = JSON.parse(points);
+        current = current[current.length - 1];
 
         // Calculate distance between coordinates
         var fromLat = current.lat * Math.PI / 180;
@@ -190,7 +193,7 @@ OpenPathsAccessory.prototype = {
         that.sensorStatus[person] = 0;
 
         // Set fault status if there's an error
-        if (error) {
+        if (error || response.statusCode != 200) {
           that.sensorStatus[person] = (that.sensorStatus[person] & 2) | 1;
         }
       }
@@ -217,15 +220,6 @@ OpenPathsAccessory.prototype = {
 
     // Start retrieving info from server
     this.periodicUpdate();
-
-    // Get initial state
-    setTimeout(function() {
-      for (var i = 0; i <= that.people.length; i++) {
-        that.occupancyService[i].getCharacteristic(Characteristic.OccupancyDetected).getValue();
-        that.occupancyService[i].getCharacteristic(Characteristic.StatusActive).getValue();
-        that.occupancyService[i].getCharacteristic(Characteristic.StatusFault).getValue();
-      }
-    }, 5000);
 
     return this.occupancyService;
   }
