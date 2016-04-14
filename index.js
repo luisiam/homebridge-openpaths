@@ -23,6 +23,7 @@ function OpenPathsAccessory(log, config){
 
   // Empty array for storing people data
   this.database = [];
+  this.distance = [];
   this.sensorState = [];
   this.sensorStatus = [];
   this.occupancyService = [];
@@ -42,6 +43,7 @@ function OpenPathsAccessory(log, config){
       secret: this.people[i].secret
     });
     this.database.push(data);
+    this.distance.push(this.geofence * 2);
 
     // Occupancy sensor for each person
     var personService = new Service.OccupancySensor(this.people[i].name, this.people[i].name);
@@ -71,7 +73,7 @@ OpenPathsAccessory.prototype = {
   getState: function(person, callback) {
     // Log only if status is active and normal
     if (this.sensorStatus[person] == 2) {
-      this.log(this.people[person].name + " is" + (this.sensorState[person] ? "" : " not") + " present.");
+      this.log(this.people[person].name + " is" + (this.sensorState[person] ? "" : " not") + " present. " + this.distance[person].toFixed(2) + " ft away.");
     }
     callback(null, this.sensorState[person]);
   },
@@ -79,7 +81,8 @@ OpenPathsAccessory.prototype = {
   // Method to return status active of single person occupancy sensor
   getStatusActive: function(person, callback) {
     var statusActive = ((this.sensorStatus[person] & 2) == 2);
-    if (!statusActive) {
+    var statusFault = this.sensorStatus[person] & 1;
+    if (!statusActive && !statusFault) {
       this.log(this.people[person].name + "'s location is unavailable.");
     }
     callback(null, statusActive);
@@ -106,8 +109,6 @@ OpenPathsAccessory.prototype = {
     for (var i = 0; i < this.sensorStatus.length; i++) {
       if ((this.sensorStatus[i] & 2) == 2) {
         statusActive = true;
-      } else {
-        this.log(this.people[i].name + "'s location is unavailable.");
       }
     }
     callback(null, statusActive);
@@ -119,7 +120,6 @@ OpenPathsAccessory.prototype = {
     for (var i = 0; i < this.sensorStatus.length; i++) {
       if (this.sensorStatus[i] & 1) {
         statusFault = 1;
-        this.log("Error getting " + this.people[i].name + "'s location.");
       }
     }
     callback(null, statusFault);
@@ -156,26 +156,31 @@ OpenPathsAccessory.prototype = {
   },
 
   getLocation: function(data, person) {
-    var params = {num_points: 1};   // Retrieve the latest points
+    var params = {num_points: 3};   // Retrieve the latest points
     var RADIUS = 20902231           // Radius of the Earth in ft
     var that = this;
 
     data.getPoints(params, function(error, response, points) {
       if (points != "[]" && !error && response.statusCode == 200) {
-        var current = JSON.parse(points)[0];
+        try {
+          var current = JSON.parse(points);
+          current = current[current.length - 1];
 
-        // Calculate distance between coordinates
-        var fromLat = current.lat * Math.PI / 180;
-        var fromLon = current.lon * Math.PI / 180
-        var dLat = that.toLat - fromLat;
-        var dLon = that.toLon - fromLon;
-        var a = Math.pow(Math.sin(dLat / 2), 2) + (Math.pow(Math.sin(dLon / 2), 2) * Math.cos(fromLat) * Math.cos(that.toLat));
-        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        var distance = RADIUS * c;
+          // Calculate distance between coordinates
+          var fromLat = current.lat * Math.PI / 180;
+          var fromLon = current.lon * Math.PI / 180
+          var dLat = that.toLat - fromLat;
+          var dLon = that.toLon - fromLon;
+          var a = Math.pow(Math.sin(dLat / 2), 2) + (Math.pow(Math.sin(dLon / 2), 2) * Math.cos(fromLat) * Math.cos(that.toLat));
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          that.distance[person] = RADIUS * c;
+        } catch (error) {
+          that.log(error);
+        }
 
         // Determine current state
         var currState;
-        if (distance < that.geofence) {
+        if (that.distance[person] < that.geofence) {
           currState = Characteristic.OccupancyDetected.OCCUPANCY_DETECTED;
         } else {
           currState = Characteristic.OccupancyDetected.OCCUPANCY_NOT_DETECTED;
@@ -185,7 +190,7 @@ OpenPathsAccessory.prototype = {
         if (that.sensorState[person] != currState) {
           that.sensorState[person] = currState;
           that.occupancyService[person].getCharacteristic(Characteristic.OccupancyDetected).setValue(currState);
-          that.log(that.people[person].name + " is " + (currState ? "" : "not") + " present.");
+          that.log(that.people[person].name + " is" + (currState ? "" : " not") + " present. " + that.distance[person].toFixed(2) + " ft away.");
         }
 
         // Set active and normal status
