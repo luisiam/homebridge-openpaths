@@ -10,9 +10,11 @@ Basics of how this plugin works:<br>
 # Installation
 1. Register in [OpenPaths](https://openpaths.cc).
 2. Login and locate your `Access Key` and `Secret Key` in OpenPaths.
-3. Install homebridge using `npm install -g homebridge`.
-4. Install this plugin using `npm install -g homebridge-openpaths`.
-5. Update your configuration file. See configuration sample below.
+3. Install the OpenPaths app ([iOS](https://itunes.apple.com/app/openpaths/id493605283)/[Android](https://play.google.com/store/apps/details?id=com.nytco.rnd.OpenPaths)).
+4. Login and start collecting location data using your phone.
+5. Install homebridge using `npm install -g homebridge`.
+6. Install this plugin using `npm install -g homebridge-openpaths`.
+7. Update your configuration file. See configuration sample below.
 
 # Configuration
 Edit your `config.json` accordingly. Configuration sample:
