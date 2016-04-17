@@ -34,7 +34,7 @@ Edit your `config.json` accordingly. Configuration sample:
     "latitude": "37.2972061",
     "longitude": "-121.957494",
 
-    "geofence": "300",
+    "geofence": "500",
     "refresh": "10",
     "manufacturer": "Manufacturer",
     "model": "Model",
@@ -49,7 +49,7 @@ Edit your `config.json` accordingly. Configuration sample:
 | people       | Array of OpenPaths accounts for presence detection.           | Yes      |
 | latitude     | Latitude of reference location for presence detection.        | Yes      |
 | longitude    | Longitude of reference location for presence detection.       | Yes      |
-| geofence     | Size of reference location geofence in `ft` (Default 300ft).  | No       |
+| geofence     | Size of reference location geofence in `ft` (Default 500ft).  | No       |
 | refresh      | Interval to poll for user location in `s` (Default 10s).      | No       |
 | manufacturer | The manufacturer of your device.                              | No       |
 | model        | The model of your device.                                     | No       |

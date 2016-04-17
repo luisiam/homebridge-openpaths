@@ -15,7 +15,7 @@ function OpenPathsAccessory(log, config){
   this.people = config.people;
   this.toLat = config.latitude * Math.PI / 180;     // Convert to radian
   this.toLon = config.longitude * Math.PI / 180;    // Convert to radian
-  this.geofence = config.geofence || 300;
+  this.geofence = config.geofence || 500;
   this.refresh = config.refresh * 1000 || 10000;    // Convert to ms
   this.manufacturer = config.manufacturer;
   this.model = config.model;
